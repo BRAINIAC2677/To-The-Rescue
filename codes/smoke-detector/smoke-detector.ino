@@ -2,7 +2,7 @@
 int smokePin = 26;
 int smokeDigPin = 15;
 // Your threshold value
-int smokeLimit = 1060;
+int smokeLimit = 50;
 
 int detectorPin = 2;
 
