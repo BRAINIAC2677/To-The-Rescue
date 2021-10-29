@@ -15,7 +15,7 @@
 #define PIN_TX    15
 #define PIN_RX    14
 #define BAUDRATE  9600
-#define PHONE_NUMBER "01404502677"
+#define PHONE_NUMBER "01633927378"
 #define MESSAGE  "Hello From JRC"
 
 GPRS gprs(PIN_TX, PIN_RX, BAUDRATE); //RX,TX,BaudRate
