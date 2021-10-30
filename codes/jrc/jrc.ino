@@ -14,6 +14,10 @@
 #define motor1speed 34
 #define motor2speed 35
 
+#define STATUS 0
+#define SWITCHON 1
+#define SWITCHOFF 2
+
 //lib instances
 LiquidCrystal lcd(18,19,23,15,16,17);
 dht DH;
@@ -22,6 +26,21 @@ SoftwareSerial mySerial(15, 17); //SIM800L Tx & Rx is connected to Arduino #3 & 
 //global variables
 String line0 = "Status: Normal";
 String line1 = "F1: 1, F2: 1, 29C, 45%";
+int command = -1;
+
+void handleCommand(){
+  switch(command){
+    case STATUS:
+      sendMsg(line0+line1);
+      break;
+    case SWITCHON:
+      motorOn();
+      break;
+    case SWITCHOFF:
+      motorOff();
+      break;
+  }
+}
 
 void sendMsg(String msg){
   mySerial.println("AT"); //Once the handshake test is successful, it will back to OK
