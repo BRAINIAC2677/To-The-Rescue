@@ -21,19 +21,27 @@
 #define SWITCHOFF 2
 
 //lib instances
-LiquidCrystal lcd(18,19,23,15,16,17);
+LiquidCrystal lcd(18,19,23,13,14,16);
 dht DH;
 SoftwareSerial mySerial(15, 17); //SIM800L Tx & Rx is connected to Arduino #3 & #2
 
 //global variables
-String line0 = "Status: Normal";
-String line1 = "F1: 1, F2: 1, 29C, 45%";
+int curDisp = 0;
+
+String line11 = "Status: Normal";
+String line12 = "Flame   Gas";
+String line13 = "0 0";
+String line14 = "Temp   Humidity";
+String line15 = "0 0";
+String flameOutput = "Safe";
+String gasOutput = "Safe";
+
 int command = -1;
 
 void handleCommand(){
   switch(command){
     case STATUS:
-      sendMsg(line0+line1);
+      sendMsg(line11+line12+line13+line14+line15);
       break;
     case SWITCHON:
       motorOn();
@@ -81,10 +89,23 @@ void updateSerial()
 }
 
 void updateDisplay(){
-  lcd.setCursor(0,0);
-  lcd.print(line0);
-  lcd.setCursor(0,1);
-  lcd.print(line1);
+  lcd.clear();
+  if(curDisp == 0){
+    lcd.setCursor(0,0);
+    lcd.print(line11);
+  }
+  else if(curDisp == 1){
+    lcd.setCursor(0,0);
+    lcd.print(line12);
+    lcd.setCursor(0,1);
+    lcd.print(line13);
+  }
+  else{
+    lcd.setCursor(0,0);
+    lcd.print(line14);
+    lcd.setCursor(0,1);
+    lcd.print(line15);
+  }
 }
 
 void motorOn(){
@@ -118,19 +139,23 @@ void setup() {
   pinMode(motor1speed, OUTPUT);
   pinMode(motor2speed, OUTPUT);
 
+  sendMsg("Hola");
   delay(1000);
 }
 
 
 
 void loop() {
+  curDisp = (curDisp + 1)%3;
+
+  //read sensor
   int flameRead1 = digitalRead(flameReadPin1);
   int flameRead2 = digitalRead(flameReadPin2);
   int gasAnalogRead = analogRead(gasReadPin);
   DH.read11(dhtReadPin);
+  //end of read sensor
 
-
-  Serial.print("flameRead1: ");
+  /*Serial.print("flameRead1: ");
   Serial.println(flameRead1);
   Serial.print("flameRead2: ");
   Serial.println(flameRead2);
@@ -140,26 +165,41 @@ void loop() {
   Serial.println(DH.humidity);
   Serial.print("temperature: ");
   Serial.print(DH.temperature); 
-  Serial.println("C  ");
+  Serial.println("C  ");*/
 
+  //flame out
   if(flameRead1 == LOW or flameRead2 == LOW){
-    line0 = "Status: Fire!";
+    line11 = "Status: Fire!";
+    flameOutput = "Fire";
     motorOn();
+    sendMsg(line11+line12+line13+line14+line15);
   }
   else{
-    line0 = "Status: Normal";
+    line11 = "Status: Normal";
+    flameOutput = "Safe";
     motorOff();
   }
+  //end of flame out
 
+  //gas leakage
   if(gasAnalogRead > gasReadLimit){
-    
+    line11 = "Status: Gas Leak!";
+    gasOutput = "Danger";
+    motorOn();
+    sendMsg(line11+line12+line13+line14+line15);
   }
   else{
-    
+    line11 = "Status: Normal";
+    gasOutput = "Safe";
+    motorOff();
   }
-
-  line1 = String("FS: ") + String("GS: ") + String(DH.temperature) + String("C ") + String(DH.humidity) + "%";
+  //end of gas leakage
+  
+  //display update
+  line13 = flameOutput + String("    ")+String(gasOutput);
+  line15 =  String(DH.temperature) + String("C ") + String(DH.humidity) + "%";
   updateDisplay();
-  delay(2000);
+  
+  delay(1500);
   
 }
