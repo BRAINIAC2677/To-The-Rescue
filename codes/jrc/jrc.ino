@@ -5,6 +5,8 @@
 
 #define analogLow 0
 #define analogHigh 1024
+#define gasReadLimit 1000
+
 #define flameReadPin1 0
 #define flameReadPin2 4
 #define gasReadPin 33
@@ -52,6 +54,17 @@ void sendMsg(String msg){
   mySerial.print(msg); //text content
   updateSerial();
   mySerial.write(26);
+}
+
+void sendCall(){
+  mySerial.println("AT"); //Once the handshake test is successful, i t will back to OK
+  updateSerial();
+  
+  mySerial.println("ATD+ +8801633927378;"); //  change ZZ with country code and xxxxxxxxxxx with phone number to dial
+  updateSerial();
+  delay(20000); // wait for 20 seconds...
+  mySerial.println("ATH"); //hang up
+  updateSerial();
 }
 
 void updateSerial()
@@ -104,7 +117,7 @@ void setup() {
   pinMode(motor2pin1, OUTPUT);
   pinMode(motor1speed, OUTPUT);
   pinMode(motor2speed, OUTPUT);
-  
+
   delay(1000);
 }
 
@@ -136,6 +149,13 @@ void loop() {
   else{
     line0 = "Status: Normal";
     motorOff();
+  }
+
+  if(gasAnalogRead > gasReadLimit){
+    
+  }
+  else{
+    
   }
 
   line1 = String("FS: ") + String("GS: ") + String(DH.temperature) + String("C ") + String(DH.humidity) + "%";
