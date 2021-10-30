@@ -1,6 +1,7 @@
 #include <LiquidCrystal.h>
 #include <dht.h>
 #include <analogWrite.h>
+#include <SoftwareSerial.h>
 
 #define analogLow 0
 #define analogHigh 1024
@@ -16,10 +17,36 @@
 //lib instances
 LiquidCrystal lcd(18,19,23,15,16,17);
 dht DH;
+SoftwareSerial mySerial(15, 17); //SIM800L Tx & Rx is connected to Arduino #3 & #2
 
 //global variables
 String line0 = "Status: Normal";
 String line1 = "F1: 1, F2: 1, 29C, 45%";
+
+void sendMsg(String msg){
+  mySerial.println("AT"); //Once the handshake test is successful, it will back to OK
+  updateSerial();
+  mySerial.println("AT+CMGF=1"); // Configuring TEXT mode
+  updateSerial();
+  mySerial.println("AT+CMGS=\"+8801633927378\"");//change ZZ with country code and xxxxxxxxxxx with phone number to sms
+  updateSerial();
+  mySerial.print(msg); //text content
+  updateSerial();
+  mySerial.write(26);
+}
+
+void updateSerial()
+{
+  delay(500);
+  while (Serial.available()) 
+  {
+    mySerial.write(Serial.read());//Forward what Serial received to Software Serial Port
+  }
+  while(mySerial.available()) 
+  {
+    Serial.write(mySerial.read());//Forward what Software Serial received to Serial Port
+  }
+}
 
 void updateDisplay(){
   lcd.setCursor(0,0);
@@ -43,10 +70,12 @@ void motorOff(){
 }
 
 void setup() {
+  Serial.begin(9600);
+  mySerial.begin(9600);
   lcd.begin(16,2);
+  
   lcd.clear();
   
-  Serial.begin(9600);
   Serial.println("Serial Monitor Started.");
 
   pinMode(flameReadPin1,INPUT);
