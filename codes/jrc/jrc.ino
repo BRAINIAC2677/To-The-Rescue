@@ -13,27 +13,13 @@
 #define motor1speed 34
 #define motor2speed 35
 
+//lib instances
 LiquidCrystal lcd(18,19,23,15,16,17);
 dht DH;
 
+//global variables
 String line0 = "Status: Normal";
 String line1 = "F1: 1, F2: 1, 29C, 45%";
-
-void setup() {
-  lcd.begin(16,2);
-  lcd.clear();
-  
-  Serial.begin(9600);
-  Serial.println("Serial Monitor Started.");
-  pinMode(flameReadPin1,INPUT);
-  pinMode(flameReadPin2,INPUT);
-  pinMode(gasReadPin, INPUT);
-  pinMode(motor1pin1, OUTPUT);
-  pinMode(motor2pin1, OUTPUT);
-  pinMode(motor1speed, OUTPUT);
-  pinMode(motor2speed, OUTPUT);
-  delay(1000);
-}
 
 void updateDisplay(){
   lcd.setCursor(0,0);
@@ -55,6 +41,26 @@ void motorOff(){
   analogWrite(motor1speed, 0);
   analogWrite(motor2speed, 0);
 }
+
+void setup() {
+  lcd.begin(16,2);
+  lcd.clear();
+  
+  Serial.begin(9600);
+  Serial.println("Serial Monitor Started.");
+
+  pinMode(flameReadPin1,INPUT);
+  pinMode(flameReadPin2,INPUT);
+  pinMode(gasReadPin, INPUT);
+  pinMode(motor1pin1, OUTPUT);
+  pinMode(motor2pin1, OUTPUT);
+  pinMode(motor1speed, OUTPUT);
+  pinMode(motor2speed, OUTPUT);
+  
+  delay(1000);
+}
+
+
 
 void loop() {
   int flameRead1 = digitalRead(flameReadPin1);
@@ -81,7 +87,7 @@ void loop() {
   }
   else{
     line0 = "Status: Normal";
-    motorOn();
+    motorOff();
   }
 
   line1 = String("FS: ") + String("GS: ") + String(DH.temperature) + String("C ") + String(DH.humidity) + "%";
